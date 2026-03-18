@@ -1,26 +1,21 @@
-import React, { useState } from "react";
+import React from "react";
 import { Outlet } from "react-router-dom";
 import Navbar from "../Layout/Navbar";
-import CartModal from "../context/CartContext";
-import CartProvider from "../context/CartContext"; // ✅ MUST
 
 const Main = () => {
 
-    const [showCart, setShowCart] = useState(false);
-
     return (
-        <CartProvider>
-
-            <Navbar setShowCart={setShowCart} />
+        <div>
+            <Navbar />
 
             <Outlet />
+            {/* FOOTER */}
+            <footer className="bg-gray-900 text-gray-400 text-center py-10">
 
-            <CartModal
-                showCart={showCart}
-                setShowCart={setShowCart}
-            />
+                © {new Date().getFullYear()} TechStore. All rights reserved.
 
-        </CartProvider>
+            </footer>
+        </div>
     );
 };
 

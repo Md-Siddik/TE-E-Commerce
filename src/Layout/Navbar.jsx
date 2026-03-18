@@ -1,9 +1,6 @@
-import React, { useContext } from 'react';
-import { CartContext } from '../context/CartContext';
+import React from 'react';
 
-const Navbar = ({ setShowCart }) => {
-
-    const { cart } = useContext(CartContext);
+const Navbar = () => {
 
     return (
         <nav className="w-full bg-white shadow-md sticky top-0 z-50">
@@ -27,17 +24,6 @@ const Navbar = ({ setShowCart }) => {
 
                     {/* Right Actions */}
                     <div className="flex items-center gap-4">
-
-                        {/* 🛒 CART BUTTON */}
-                        <button
-                            onClick={() => setShowCart(true)}
-                            className="relative px-4 py-2 bg-indigo-600 text-white rounded-md"
-                        >
-                            Cart
-                            <span className="ml-2 bg-white text-indigo-600 px-2 rounded text-xs">
-                                {cart.length}
-                            </span>
-                        </button>
 
                         {/* PC Builder */}
                         <a
