@@ -5,11 +5,6 @@ const ProductCard = ({ product }) => {
 
     const [showModal, setShowModal] = useState(false);
 
-    const discountedPrice =
-        product.discount > 0
-            ? product.price - (product.price * product.discount) / 100
-            : product.price;
-
     return (
 
         <>
@@ -17,9 +12,29 @@ const ProductCard = ({ product }) => {
 
                 <div className="relative bg-gray-100">
 
+                    {/* DISCOUNT BADGE */}
                     {product.discount > 0 && (
-                        <div className="absolute top-3 left-3 z-10 bg-red-600 text-white text-xs px-3 py-1 rounded-full">
+                        <div className="absolute top-3 left-3 z-10 bg-red-600 text-white text-xs px-3 py-1 rounded-full shadow-md">
                             SAVE {product.discount}%
+                        </div>
+                    )}
+
+                    {/* PREMIUM OFFER BADGE */}
+                    {product.offer && (
+                        <div className="absolute top-3 right-3 z-10">
+                            <div className="relative px-4 py-1.5 rounded-full text-xs font-semibold text-white
+                        bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600
+                        shadow-[0_4px_20px_rgba(255,200,0,0.5)]
+                        border border-white/30 backdrop-blur-md overflow-hidden">
+
+                                {/* Shine effect */}
+                                <span className="absolute inset-0 bg-white/20 opacity-0 hover:opacity-100 transition duration-700"></span>
+
+                                {/* Content */}
+                                <span className="relative z-10 flex items-center gap-1">
+                                    👑 {product.offer}
+                                </span>
+                            </div>
                         </div>
                     )}
 
@@ -40,7 +55,7 @@ const ProductCard = ({ product }) => {
                     <div className="mt-3 flex items-center gap-2">
 
                         <span className="text-indigo-600 font-bold text-xl">
-                            ৳{Math.round(discountedPrice)}
+                            ৳{Math.round(product.finalPrice)}
                         </span>
 
                         {product.discount > 0 && (

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 
 const OrderModal = ({ product, onClose }) => {
 
+    const [name, setName] = useState("");
     const [quantity, setQuantity] = useState(1);
     const [phone, setPhone] = useState("");
     const [address, setAddress] = useState("");
@@ -30,7 +31,8 @@ const OrderModal = ({ product, onClose }) => {
 
         const orderData = {
             productId: product._id,
-            name: product.name,
+            name,
+            productName: product.name,
             price: discountedPrice,
             quantity,
             phone,
@@ -77,6 +79,16 @@ const OrderModal = ({ product, onClose }) => {
                     <span>{quantity}</span>
                     <button onClick={() => setQuantity(quantity + 1)} className="px-3 border">+</button>
                 </div>
+
+                {/* Name */}
+                <input
+                    type="text"
+                    placeholder="Your Name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full border p-2 mb-3 rounded"
+                    required
+                />
 
                 {/* Phone */}
                 <input

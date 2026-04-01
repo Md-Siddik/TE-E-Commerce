@@ -28,6 +28,16 @@ const Home = () => {
 
     const featuredProducts = products.slice(0, 4);
 
+    const seen = new Set();
+
+    const offers = products.filter(p => {
+        if (!p.offer || seen.has(p.offer)) {
+            return false;
+        }
+        seen.add(p.offer);
+        return true;
+    });
+
 
     return (
         <div className="bg-slate-50">
@@ -61,6 +71,62 @@ const Home = () => {
                 </div>
             </section>
 
+            <section className="bg-white py-20">
+                {/* Header */}
+                <div className="text-center mb-14 px-6">
+                    <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
+                        Available Offers
+                    </h1>
+                    <p className="text-gray-500 mt-3">
+                        Discover exclusive deals crafted just for you
+                    </p>
+                </div>
+
+                {/* Grid */}
+                <div className="max-w-7xl mx-auto px-6 grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+
+                    {offers.map((offer, i) => (
+                        <div
+                            key={i}
+                            className="group relative rounded-2xl border border-gray-200 bg-white p-6 overflow-hidden 
+        hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
+                        >
+                            {/* Soft gradient glow */}
+                            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-300 
+        bg-gradient-to-br from-indigo-500/5 via-purple-500/5 to-pink-500/5"></div>
+
+                            {/* Content */}
+                            <div className="relative z-10">
+
+                                {/* Tag */}
+                                <span className="inline-block text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full mb-4">
+                                    Exclusive
+                                </span>
+
+                                {/* Offer text */}
+                                <h2 className="text-lg font-semibold text-gray-800 leading-snug group-hover:text-gray-900 transition">
+                                    {offer.offer}
+                                </h2>
+
+                                {/* Bottom */}
+                                <div className="mt-6 flex items-center justify-between">
+                                    <span className="text-sm text-gray-400">
+                                        Limited time
+                                    </span>
+
+                                    <button className="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition">
+                                        Claim →
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Accent line */}
+                            <div className="absolute bottom-0 left-0 w-0 h-1 bg-indigo-500 group-hover:w-full transition-all duration-300"></div>
+                        </div>
+                    ))}
+
+                </div>
+            </section>
 
             {/* CATEGORY CARDS */}
             <section className="max-w-7xl mx-auto px-6 py-16">
