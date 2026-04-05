@@ -1,9 +1,12 @@
 import React, { useState } from "react";
 import OrderModal from "./OrderModal";
+import { useNavigate } from "react-router-dom";
 
 const ProductCard = ({ product }) => {
 
     const [showModal, setShowModal] = useState(false);
+
+    const navigate = useNavigate();
 
     return (
 
@@ -67,10 +70,10 @@ const ProductCard = ({ product }) => {
                     </div>
 
                     <button
-                        onClick={() => setShowModal(true)}
+                        onClick={() => navigate(`/product/${product._id}`)}
                         className="mt-5 w-full bg-indigo-600 text-white py-2.5 rounded-lg hover:bg-indigo-700"
                     >
-                        Order Now
+                        Details
                     </button>
 
                 </div>

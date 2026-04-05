@@ -7,6 +7,7 @@ const Dashboard = () => {
     const [images, setImages] = useState(Array(6).fill(null));
     const [editingProduct, setEditingProduct] = useState(null);
     const [activeTab, setActiveTab] = useState("products");
+    const [showForm, setShowForm] = useState(false);
 
     useEffect(() => {
         fetch("http://localhost:5000/products")
@@ -16,10 +17,9 @@ const Dashboard = () => {
         fetch("http://localhost:5000/orders")
             .then(res => res.json())
             .then(data => setOrders(data));
-
     }, []);
 
-    // IMAGE SLOT
+    // IMAGE
     const handleImageChange = (index, file) => {
         const newImages = [...images];
         newImages[index] = file;
@@ -29,21 +29,18 @@ const Dashboard = () => {
     // EDIT
     const handleEdit = (product) => {
         setEditingProduct(product);
+        setShowForm(true);
     };
 
-    // ADD
+    // ADD PRODUCT
     const handleAddProduct = (e) => {
-
         e.preventDefault();
-
         const form = e.target;
 
         const price = Number(form.price.value);
         const finalPrice = Number(form.finalPrice.value || price);
-        const offerValue = form.offer.value;
 
         let discount = 0;
-
         if (finalPrice < price) {
             discount = Math.round(((price - finalPrice) / price) * 100);
         }
@@ -52,17 +49,21 @@ const Dashboard = () => {
             name: form.name.value,
             quantity: Number(form.quantity.value),
             price,
+            finalPrice,
             discount,
             category: form.category.value,
-            finalPrice,
+            offer: form.offer.value,
+
+            description: form.description.value,
+            features: form.features.value.split(",").map(f => f.trim()),
+            brand: form.brand.value,
+            specifications: form.specifications.value,
+            delivery: form.delivery.value,
+
             image: images.filter(i => i)[0]
                 ? URL.createObjectURL(images.filter(i => i)[0])
                 : ""
         };
-
-        if (offerValue) {
-            product.offer = offerValue;
-        }
 
         fetch("http://localhost:5000/products", {
             method: "POST",
@@ -78,15 +79,13 @@ const Dashboard = () => {
 
                 form.reset();
                 setImages(Array(6).fill(null));
+                setShowForm(false);
             })
-            .catch(() => {
-                alert("❌ Product add failed");
-            });
+            .catch(() => alert("❌ Product add failed"));
     };
 
-    // UPDATE
+    // UPDATE PRODUCT
     const handleUpdateProduct = (e) => {
-
         e.preventDefault();
         const form = e.target;
 
@@ -94,7 +93,6 @@ const Dashboard = () => {
         const finalPrice = Number(form.finalPrice.value || price);
 
         let discount = 0;
-
         if (finalPrice < price) {
             discount = Math.round(((price - finalPrice) / price) * 100);
         }
@@ -106,7 +104,13 @@ const Dashboard = () => {
             finalPrice,
             discount,
             category: form.category.value,
-            offer: form.offer.value
+            offer: form.offer.value,
+
+            description: form.description.value,
+            features: form.features.value.split(",").map(f => f.trim()),
+            brand: form.brand.value,
+            specifications: form.specifications.value,
+            delivery: form.delivery.value,
         };
 
         fetch(`http://localhost:5000/products/${editingProduct._id}`, {
@@ -120,27 +124,25 @@ const Dashboard = () => {
                 if (data.modifiedCount > 0 || data.success) {
 
                     const updated = products.map(p =>
-                        p._id?.toString() === editingProduct._id?.toString()
+                        p._id === editingProduct._id
                             ? { ...p, ...updatedProduct }
                             : p
                     );
 
                     setProducts(updated);
                     setEditingProduct(null);
+                    setShowForm(false);
 
                 } else {
                     alert("❌ Update failed");
                 }
 
             })
-            .catch(() => {
-                alert("❌ Server error");
-            });
+            .catch(() => alert("❌ Server error"));
     };
 
-    // DELETE
+    // DELETE PRODUCT
     const handleDelete = (id) => {
-
         if (!window.confirm("Delete this product?")) return;
 
         fetch(`http://localhost:5000/products/${id}`, {
@@ -152,52 +154,36 @@ const Dashboard = () => {
             });
     };
 
-    // COMPLETE ORDER
+    // ORDER COMPLETE
     const handleCompleteOrder = (id) => {
-
-        fetch(`http://localhost:5000/orders/${id}`, {
-            method: "PUT"
-        })
+        fetch(`http://localhost:5000/orders/${id}`, { method: "PUT" })
             .then(res => res.json())
             .then(() => {
-
-                // 🔥 FIX: state update correctly
-                const updatedOrders = orders.map(o =>
+                setOrders(orders.map(o =>
                     o._id === id ? { ...o, status: "completed" } : o
-                );
-
-                setOrders(updatedOrders);
-
+                ));
             });
-
     };
 
     const handleDeleteOrder = (id) => {
+        if (!window.confirm("Cancel this order?")) return;
 
-        if (!window.confirm("Are you sure to cancel this order?")) return;
-
-        fetch(`http://localhost:5000/orders/${id}`, {
-            method: "DELETE"
-        })
+        fetch(`http://localhost:5000/orders/${id}`, { method: "DELETE" })
             .then(res => res.json())
             .then(() => {
-
                 setOrders(orders.filter(o => o._id !== id));
-
             });
-
     };
 
     const newOrders = orders.filter(o =>
-        !o.status || o.status.toLowerCase() === "new"
+        !o.status || o.status === "New"
     );
 
     const completedOrders = orders.filter(o =>
-        o.status && o.status.toLowerCase() === "completed"
+        o.status === "completed"
     );
 
     return (
-
         <div className="flex">
 
             {/* SIDEBAR */}
@@ -217,127 +203,97 @@ const Dashboard = () => {
                 </button>
             </div>
 
-
             <div className="flex-1 p-6 max-w-7xl mx-auto">
 
-                {/* ================= PRODUCTS ================= */}
+                {/* PRODUCTS */}
                 {activeTab === "products" && (
                     <>
-                        <h1 className="text-3xl font-bold mb-8">
-                            Product Dashboard
-                        </h1>
+                        <div className="flex justify-between items-center mb-6">
+                            <h1 className="text-3xl font-bold">Product Dashboard</h1>
+
+                            <button
+                                onClick={() => {
+                                    setShowForm(true);
+                                    setEditingProduct(null);
+                                }}
+                                className="bg-indigo-600 text-white px-4 py-2 rounded-lg"
+                            >
+                                + Add Product
+                            </button>
+                        </div>
 
                         {/* FORM */}
-                        <form
-                            onSubmit={editingProduct ? handleUpdateProduct : handleAddProduct}
-                            className="bg-white p-6 rounded-xl shadow mb-10 grid md:grid-cols-2 gap-4"
-                        >
-
-                            <input name="name" placeholder="Product Name" defaultValue={editingProduct?.name || ""} required className="border p-2 rounded" />
-                            <input
-                                name="quantity"
-                                type="number"
-                                placeholder="Quantity"
-                                defaultValue={editingProduct?.quantity || ""}
-                                required
-                                className="border p-2 rounded"
-                            />
-                            <input name="price" type="number" placeholder="Price" defaultValue={editingProduct?.price || ""} required className="border p-2 rounded" />
-
-                            <input
-                                name="finalPrice"
-                                type="number"
-                                step="0.01"
-                                placeholder="Final Price After Discount"
-                                defaultValue={
-                                    editingProduct
-                                        ? editingProduct.price -
-                                        (editingProduct.price * editingProduct.discount) / 100
-                                        : ""
-                                }
-                                className="border p-2 rounded"
-                            />
-
-                            <select name="category" defaultValue={editingProduct?.category || ""} className="border p-2 rounded" required>
-                                <option value="">Select Category</option>
-                                <option value="Mobile Accessories">Mobile Accessories</option>
-                                <option value="Computer Accessories">Computer Accessories</option>
-                                <option value="Laptop">Laptop</option>
-                                <option value="Desktop">Desktop</option>
-                                <option value="Network">Network</option>
-                            </select>
-
-                            <select
-                                name="offer"
-                                className="w-full border rounded-lg px-3 py-2 mt-2"
+                        {showForm && (
+                            <form
+                                onSubmit={editingProduct ? handleUpdateProduct : handleAddProduct}
+                                className="bg-white p-6 rounded-xl shadow mb-10 grid md:grid-cols-2 gap-4"
                             >
-                                <option value="">No Offer</option>
-                                <option value="Buy 2 Get 1 Free">Buy 2 Get 1 Free</option>
-                                <option value="Special Discount">Special Discount</option>
-                                <option value="Buy & Get Gift">Buy & Get Gift</option>
-                            </select>
 
-                            {/* IMAGE SLOT */}
-                            <div className="md:col-span-2">
+                                <input name="name" placeholder="Product Name" defaultValue={editingProduct?.name || ""} required className="border p-2 rounded" />
+                                <input name="quantity" type="number" placeholder="Quantity" defaultValue={editingProduct?.quantity || ""} required className="border p-2 rounded" />
+                                <input name="price" type="number" placeholder="Price" defaultValue={editingProduct?.price || ""} required className="border p-2 rounded" />
 
-                                <label className="font-semibold mb-3 block">
-                                    Product Images (Max 6)
-                                </label>
+                                <input name="finalPrice" type="number" placeholder="Final Price" defaultValue={editingProduct?.finalPrice || ""} className="border p-2 rounded" />
 
-                                <div className="grid grid-cols-3 gap-4">
+                                <select name="category" defaultValue={editingProduct?.category || ""} className="border p-2 rounded" required>
+                                    <option value="">Select Category</option>
+                                    <option value="Mobile Accessories">Mobile Accessories</option>
+                                    <option value="Computer Accessories">Computer Accessories</option>
+                                    <option value="Laptop">Laptop</option>
+                                    <option value="Network">Network</option>
+                                </select>
 
-                                    {images.map((img, i) => {
+                                <select name="offer" defaultValue={editingProduct?.offer || ""} className="border p-2 rounded">
+                                    <option value="">No Offer</option>
+                                    <option value="Buy 2 Get 1 Free">Buy 2 Get 1 Free</option>
+                                    <option value="Special Discount">Special Discount</option>
+                                    <option value="Buy & Get Gift">Buy & Get Gift</option>
+                                    <option value="Eid Offer">Eid Offer</option>
+                                </select>
 
-                                        return (
-                                            <label
-                                                key={i}
-                                                className="relative h-28 border-2 border-dashed rounded-lg flex items-center justify-center cursor-pointer hover:border-indigo-500"
-                                            >
+                                <input name="brand" placeholder="Brand" defaultValue={editingProduct?.brand || ""} className="border p-2 rounded" />
+                                <input name="delivery" placeholder="Delivery Info" defaultValue={editingProduct?.delivery || ""} className="border p-2 rounded" />
 
-                                                {img ? (
-                                                    <img
-                                                        src={URL.createObjectURL(img)}
-                                                        className="absolute inset-0 w-full h-full object-cover rounded-lg"
-                                                    />
-                                                ) : (
-                                                    <span className="text-gray-400 text-2xl">+</span>
-                                                )}
+                                <textarea name="description" placeholder="Description" defaultValue={editingProduct?.description || ""} className="border p-2 rounded md:col-span-2" />
 
-                                                <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    className="hidden"
-                                                    onChange={(e) =>
-                                                        handleImageChange(i, e.target.files[0])
-                                                    }
-                                                />
+                                <input name="features" placeholder="Features (comma separated)" defaultValue={editingProduct?.features?.join(", ") || ""} className="border p-2 rounded md:col-span-2" />
 
-                                            </label>
-                                        );
-                                    })}
+                                <textarea name="specifications" placeholder="Specifications" defaultValue={editingProduct?.specifications || ""} className="border p-2 rounded md:col-span-2" />
 
+                                {/* IMAGE */}
+                                <div className="md:col-span-2 grid grid-cols-3 gap-4">
+                                    {images.map((img, i) => (
+                                        <label key={i} className="relative h-24 border-2 border-dashed rounded flex items-center justify-center cursor-pointer">
+                                            {img ? (
+                                                <img src={URL.createObjectURL(img)} className="absolute w-full h-full object-cover rounded" />
+                                            ) : "+"
+                                            }
+                                            <input type="file" hidden onChange={(e) => handleImageChange(i, e.target.files[0])} />
+                                        </label>
+                                    ))}
                                 </div>
 
-                            </div>
+                                <button className="bg-indigo-600 text-white py-2 rounded md:col-span-2">
+                                    {editingProduct ? "Update" : "Add Product"}
+                                </button>
 
-                            <button className="bg-indigo-600 text-white py-2 rounded md:col-span-2">
-                                {editingProduct ? "Update Product" : "Add Product"}
-                            </button>
+                                <button type="button" onClick={() => setShowForm(false)} className="bg-gray-500 text-white py-2 rounded md:col-span-2">
+                                    Cancel
+                                </button>
 
-                        </form>
+                            </form>
+                        )}
 
-                        {/* PRODUCTS */}
+                        {/* PRODUCTS GRID */}
                         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
 
                             {products.map(p => (
-
                                 <div key={p._id} className="bg-white border rounded-lg p-2">
 
                                     <img src={p.image} className="h-24 w-full object-cover rounded" />
 
-                                    <h3 className="text-xs font-semibold mt-1">{p.name}</h3>
+                                    <h3 className="text-xs font-semibold">{p.name}</h3>
                                     <p className="text-xs text-gray-500">{p.category}</p>
-                                    <p className="text-xs text-gray-500">Quantity:<span className="text-sm font-semibold text-black">{p.quantity}</span></p>
                                     <p className="text-sm font-bold text-indigo-600">৳{p.price}</p>
 
                                     <div className="flex gap-1 mt-2">
@@ -346,15 +302,13 @@ const Dashboard = () => {
                                     </div>
 
                                 </div>
-
                             ))}
 
                         </div>
                     </>
                 )}
 
-
-                {/* ================= NEW ORDERS ================= */}
+                {/* NEW ORDERS */}
                 {activeTab === "new" && (
                     <>
                         <h1 className="text-2xl font-bold mb-6">New Orders</h1>
@@ -375,6 +329,7 @@ const Dashboard = () => {
                                         <p className="font-semibold">
                                             {order.productName || order.name || "No Name"}
                                         </p>
+
                                         <p className="text-sm text-gray-500">
                                             👤 {order.name || "No Name"}
                                         </p>
@@ -385,15 +340,17 @@ const Dashboard = () => {
                                         <p>📍 {order.address}</p>
                                         <p>💳 {order.payment || order.paymentMethod}</p>
                                         <p>🧾 {order.trxId || "No TrxID"}</p>
-                                        <div className="flex items-center gap-1 overflow-hidden">
-                                            <p>🍧</p>
-                                            <a href={order.location}>{order.location || "No Location"}</a>
-                                        </div>
 
+                                        <div className="flex items-center gap-1 overflow-hidden">
+                                            <p>📍</p>
+                                            <a href={order.location} className="text-blue-500 truncate">
+                                                {order.location || "No Location"}
+                                            </a>
+                                        </div>
 
                                     </div>
 
-                                    {/* 🔥 ACTION BUTTONS */}
+                                    {/* ACTION */}
                                     <div className="flex flex-col gap-2">
                                         <button
                                             onClick={() => handleCompleteOrder(order._id)}
@@ -418,8 +375,7 @@ const Dashboard = () => {
                     </>
                 )}
 
-
-                {/* ================= COMPLETED ================= */}
+                {/* COMPLETED */}
                 {activeTab === "completed" && (
                     <>
                         <h1 className="text-2xl font-bold mb-6">Completed Orders</h1>
@@ -465,7 +421,7 @@ const Dashboard = () => {
                                     <div className="text-sm text-gray-600 space-y-1">
                                         <p>📍 {order.address}</p>
                                         <p>💳 {order.paymentMethod}</p>
-                                        <p>💳 {order.trxId}</p>
+                                        <p>🧾 {order.trxId}</p>
                                     </div>
 
                                     {/* RIGHT */}
@@ -493,7 +449,6 @@ const Dashboard = () => {
                 )}
 
             </div>
-
         </div>
     );
 };

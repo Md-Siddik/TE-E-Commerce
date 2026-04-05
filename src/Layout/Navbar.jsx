@@ -1,6 +1,48 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../Authentication/AuthProvider';
 
 const Navbar = () => {
+
+    const navigate = useNavigate();
+    const { user, logOut } = useContext(AuthContext);
+    const handleLogOut = () => {
+        logOut()
+            .then(() => { })
+            .catch(error => console.log(error));
+
+        navigate('/');
+    }
+
+    const navLinks = <>
+        <li>
+            <NavLink
+                to="/"
+                className={({ isActive }) =>
+                    isActive ? "border-b-2 border-blue-500 py-2 px-3 mx-1"
+                        : "hover:border-b-2 hover:border-blue-500 py-2 px-3"
+                }
+            >
+                Home
+            </NavLink>
+        </li>
+        <li>
+            <NavLink to="/shop">Shop</NavLink>
+        </li>
+
+        <li>
+            <NavLink to="/sell">Sell</NavLink>
+        </li>
+        <li>
+            <NavLink to="/vendors">Vendors</NavLink>
+        </li>
+        <li>
+            <NavLink to="/contact">Contact</NavLink>
+        </li>
+        <li className={user? "block" : "hidden"}>
+            <NavLink to="/dashboard">Dashboard</NavLink>
+        </li>
+    </>
 
     return (
         <nav className="w-full bg-white shadow-md sticky top-0 z-50">
@@ -13,14 +55,9 @@ const Navbar = () => {
                     </div>
 
                     {/* Menu */}
-                    <div className="hidden md:flex items-center gap-6 font-medium">
-                        <a href="/" className="text-gray-700 hover:text-blue-600">Home</a>
-                        <a href="/shop" className="text-gray-700 hover:text-blue-600">Shop</a>
-                        <a href="#" className="text-gray-700 hover:text-blue-600">Sell</a>
-                        <a href="#" className="text-gray-700 hover:text-blue-600">Vendors</a>
-                        <a href="#" className="text-gray-700 hover:text-blue-600">Contact</a>
-                        <a href="/dashboard" className="text-gray-700 hover:text-blue-600">Dashboard</a>
-                    </div>
+                    <ul className="hidden md:flex items-center gap-6 font-medium">
+                        {navLinks}
+                    </ul>
 
                     {/* Right Actions */}
                     <div className="flex items-center gap-4">
@@ -33,9 +70,13 @@ const Navbar = () => {
                             <span className="relative z-10">PC Builder</span>
                         </a>
 
-                        <button className="px-4 py-2 rounded-md border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition">
-                            Login
-                        </button>
+                        {
+                            user ? <button onClick={handleLogOut}>Log Out</button>
+                                :
+                                <Link to="/login">
+                                    <button>Login</button>
+                                </Link>
+                        }
 
                     </div>
 

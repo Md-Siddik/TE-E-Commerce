@@ -83,7 +83,7 @@ const Home = () => {
                 </div>
 
                 {/* Grid */}
-                <div className="max-w-7xl mx-auto px-6 grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                <div className="max-w-7xl mx-auto px-6 grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-8">
 
                     {offers.map((offer, i) => (
                         <div

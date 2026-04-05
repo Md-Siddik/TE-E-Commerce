@@ -11,6 +11,9 @@ import Home from './Home/Home';
 import Shop from './Shop/Shop';
 import PCBuilder from './PCBuilder/PCBuilder';
 import Dashboard from './Dashboard/Dashboard';
+import ProductDetails from './components/ProductDetails';
+import Login from './Authentication/Login';
+import AuthProvider from './Authentication/AuthProvider';
 
 const router = createBrowserRouter([
   {
@@ -25,9 +28,21 @@ const router = createBrowserRouter([
       },
 
       {
+        path: "/login",
+        element: <Login></Login>,
+        
+      },
+
+      {
         path: "/shop",
         element: <Shop></Shop>,
         loader: () => fetch("http://localhost:5000/products")
+      },
+
+      {
+        path: "/product/:id",
+        element: <ProductDetails></ProductDetails>,
+        // loader: () => fetch("http://localhost:5000/products")
       },
 
       {
@@ -52,6 +67,8 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   </StrictMode>,
 )
