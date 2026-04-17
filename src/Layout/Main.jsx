@@ -1,6 +1,7 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
 import Navbar from "../Layout/Navbar";
+import Footer from "../Layout/Footer";
 
 const Main = () => {
 
@@ -10,11 +11,7 @@ const Main = () => {
 
             <Outlet />
             {/* FOOTER */}
-            <footer className="bg-gray-900 text-gray-400 text-center py-10">
-
-                © {new Date().getFullYear()} TechStore. All rights reserved.
-
-            </footer>
+            <Footer />
         </div>
     );
 };
